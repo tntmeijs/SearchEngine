@@ -5,7 +5,7 @@ namespace WebScraper
     /// <summary>
     /// Main application
     /// </summary>
-    class Program
+    internal class Program
     {
         /// <summary>
         /// Database used to store the results of the program in
