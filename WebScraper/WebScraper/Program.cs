@@ -82,6 +82,10 @@ namespace WebScraper
         {
             TryParseAppConfig();
             InitializeDatabase(Database.DatabaseType.PostgreSQL);
+
+            //#DEBUG: parse test
+            Scraper scraper = new Scraper();
+            scraper.ScrapePage("https://reddit.com");
         }
 
         /// <summary>
