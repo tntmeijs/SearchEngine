@@ -16,6 +16,18 @@ namespace Databases
         }
 
         /// <summary>
+        /// Database connection information structure
+        /// </summary>
+        public struct DatabaseConnectionInfo
+        {
+            public string HostName;
+            public string HostPort;
+            public string DatabaseName;
+            public string UserName;
+            public string UserPassword;
+        }
+
+        /// <summary>
         /// Create a new database object
         /// </summary>
         /// <param name="type">Database to create</param>
@@ -32,10 +44,17 @@ namespace Databases
         }
 
         /// <summary>
-        /// Attempt to connect to the database using the provided connection URL
+        /// Helper function to turn a "DatabaseConnectionInfo" structure into a
+        /// database connection string
         /// </summary>
-        /// <param name="connectionString">URL to connect with the database</param>
-        public void Connect(string connectionString)
-        {}
+        /// <param name="connectionInfo">Information needed to establish a connection with the database</param>
+        /// <returns>Connection string</returns>
+        protected abstract string ConstructConnectionString(DatabaseConnectionInfo connectionInfo);
+
+        /// <summary>
+        /// Initialize the database object to prepare for usage
+        /// </summary>
+        /// <param name="connectionInfo">Information needed to establish a connection with the database</param>
+        public abstract void Initialize(DatabaseConnectionInfo connectionInfo);
     }
 }
