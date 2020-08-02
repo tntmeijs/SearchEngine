@@ -69,14 +69,15 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scraper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Database\Databases.csproj">
-      <Project>{1115a775-8e59-4977-b859-1acf3ab97c86}</Project>
+    <ProjectReference Include="..\Databases\Databases.csproj">
+      <Project>{e5b9a53b-f91b-425b-b654-5a7669ac56b2}</Project>
       <Name>Databases</Name>
     </ProjectReference>
   </ItemGroup>
