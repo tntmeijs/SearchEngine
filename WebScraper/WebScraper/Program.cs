@@ -84,7 +84,7 @@ namespace WebScraper
             InitializeDatabase(Database.DatabaseType.PostgreSQL);
 
             //#DEBUG: parse test
-            Scraper scraper = new Scraper();
+            Crawler scraper = new Crawler();
             scraper.ScrapePage("https://reddit.com");
         }
 
