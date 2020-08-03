@@ -85,7 +85,12 @@ namespace WebScraper
 
             //#DEBUG: parse test
             Crawler scraper = new Crawler();
-            scraper.CrawlPage(new Uri("https://html-agility-pack.net"));
+            PageInfo pageInfo = scraper.CrawlPage(new Uri("https://html-agility-pack.net"));
+
+            if (pageInfo.IsValid)
+            {
+                Console.WriteLine("Crawled page information is valid, data should be added to the database here.");
+            }
         }
 
         /// <summary>

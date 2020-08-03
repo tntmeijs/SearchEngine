@@ -10,32 +10,6 @@ namespace WebScraper
     /// </summary>
     internal class PageParser
     {
-        /// <summary>
-        /// Information on a page that is useful to the crawler
-        /// </summary>
-        public struct PageInfo
-        {
-            /// <summary>
-            /// Title of the web page
-            /// </summary>
-            public string Title;
-
-            /// <summary>
-            /// Description meta data
-            /// </summary>
-            public string Description;
-
-            /// <summary>
-            /// Links found to pages on the same domain
-            /// </summary>
-            public List<string> SameDomainLinks;
-
-            /// <summary>
-            /// Links found to pages on external domains
-            /// </summary>
-            public List<string> ExternalDomainLinks;
-        }
-
         public PageInfo Parse(Uri uri)
         {
             PageInfo pageInfo = new PageInfo
@@ -62,10 +36,12 @@ namespace WebScraper
                     if (hrefValue[0] == '/')
                     {
                         // Links to a page but without a host name, assume this is a same domain link
-                        UriBuilder uriBuilder = new UriBuilder();
-                        uriBuilder.Scheme = uri.Scheme;
-                        uriBuilder.Host = uri.Host;
-                        uriBuilder.Path = hrefValue;
+                        UriBuilder uriBuilder = new UriBuilder
+                        {
+                            Scheme = uri.Scheme,
+                            Host = uri.Host,
+                            Path = hrefValue
+                        };
 
                         pageInfo.SameDomainLinks.Add(uriBuilder.ToString());
                     }

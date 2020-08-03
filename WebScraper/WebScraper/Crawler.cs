@@ -27,9 +27,11 @@ namespace WebScraper
         /// Crawl the page at the specified URI for content
         /// </summary>
         /// <param name="uri">URI of the page to scrape</param>
-        public void CrawlPage(Uri uri)
+        /// <returns>Information found while crawling the page</returns>
+        public PageInfo CrawlPage(Uri uri)
         {
-            RobotsTxt robotsTxt = null;
+            PageInfo pageInfo = new PageInfo();
+            RobotsTxt robotsTxt;
 
             // Attempt to retrieve a robots.txt file from the in-memory cache
             if (CachedRobotsTxtPerHost.ContainsKey(uri.Host))
@@ -54,7 +56,7 @@ namespace WebScraper
                  
                 // Crawl the page for information
                 PageParser pageParser = new PageParser();
-                PageParser.PageInfo pageInfo = pageParser.Parse(uri);
+                pageInfo = pageParser.Parse(uri);
 
                 // Remove any links that violate the robots.txt file of the current domain
                 List<string> validSameDomainLinks = new List<string>();
@@ -85,6 +87,8 @@ namespace WebScraper
             {
                 Console.WriteLine("Skipping page: " + uri.AbsoluteUri);
             }
+
+            return pageInfo;
         }
     }
 }
