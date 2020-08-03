@@ -85,7 +85,7 @@ namespace WebScraper
 
             //#DEBUG: parse test
             Crawler scraper = new Crawler();
-            scraper.ScrapePage("https://reddit.com");
+            scraper.ScrapePage(new Uri("https://www.reddit.com"));
         }
 
         /// <summary>
