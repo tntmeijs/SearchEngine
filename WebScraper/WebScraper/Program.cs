@@ -85,7 +85,7 @@ namespace WebScraper
 
             //#DEBUG: parse test
             Crawler scraper = new Crawler();
-            scraper.ScrapePage(new Uri("https://www.reddit.com"));
+            scraper.CrawlPage(new Uri("https://html-agility-pack.net/descendant-nodes"));
         }
 
         /// <summary>

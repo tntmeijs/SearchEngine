@@ -36,10 +36,10 @@ namespace WebScraper
         {
             // If the only thing in the path is a slash, it is meant to match any
             // character in that path
-            // Same thing goes for empty patterns
-            if (pattern.Length == 1 && pattern[0] == '/')
+            // Same thing happens with empty patterns
+            if (pattern.Length == 0 || (pattern.Length == 1 && pattern[0] == '/'))
             {
-                return "^\\/.*$";
+                return "\\/.*";
             }
 
             // The replacing logic is all about replacing the wild card characters
@@ -144,7 +144,7 @@ namespace WebScraper
                         }
 
                         // Parse disallowed paths
-                        if (lineBuffer.StartsWith("disallow"))
+                        if (lineBuffer.StartsWith("disallow") && lineBuffer != "disallow:")
                         {
                             DisallowedPaths.Add(lineBuffer.Split(':')[1]);
                             continue;
@@ -197,7 +197,6 @@ namespace WebScraper
                 // Disallow access if the pattern matches
                 if (Regex.Match(uri.PathAndQuery, pattern).Success)
                 {
-                    Console.WriteLine("Disallowed based on pattern: " + path + ", with regex: " + pattern);
                     return false;
                 }
             }
@@ -211,12 +210,10 @@ namespace WebScraper
                 // Allow access if the pattern matches
                 if (Regex.Match(uri.PathAndQuery, pattern).Success)
                 {
-                    Console.WriteLine("Allowed based on pattern: " + path + ", with regex: " + pattern);
                     return true;
                 }
             }
 
-            Console.WriteLine("Could not find a matching rule, page will be crawled regardless.");
             return true;
         }
     }
