@@ -10,6 +10,11 @@ namespace WebScraper
     /// </summary>
     internal class PageParser
     {
+        /// <summary>
+        /// Parse a web page
+        /// </summary>
+        /// <param name="uri">Web page to parse</param>
+        /// <returns>Parsed web page information</returns>
         public PageInfo Parse(Uri uri)
         {
             PageInfo pageInfo = new PageInfo
