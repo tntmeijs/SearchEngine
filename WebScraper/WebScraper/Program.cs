@@ -84,8 +84,8 @@ namespace WebScraper
             InitializeDatabase(Database.DatabaseType.PostgreSQL);
 
             //#DEBUG: parse test
-            Crawler scraper = new Crawler();
-            PageInfo pageInfo = scraper.CrawlPage(new Uri("https://html-agility-pack.net"));
+            Crawler crawler = new Crawler();
+            PageInfo pageInfo = crawler.CrawlPage(new Uri("https://html-agility-pack.net"));
 
             if (pageInfo.IsValid)
             {
