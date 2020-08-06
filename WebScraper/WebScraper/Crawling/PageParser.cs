@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using HtmlAgilityPack;
 
-namespace WebScraper
+namespace Crawling
 {
     /// <summary>
     /// Parse a page to find important information and index any links
@@ -19,6 +19,7 @@ namespace WebScraper
         {
             PageInfo pageInfo = new PageInfo
             {
+                Uri = uri,
                 Title = string.Empty,
                 Description = string.Empty,
                 SameDomainLinks = new List<string>(),
@@ -28,8 +29,18 @@ namespace WebScraper
             HtmlWeb web = new HtmlWeb();
             HtmlDocument html = web.Load(uri);
 
-            HtmlNode title = html.DocumentNode.SelectSingleNode("//head/title");
+            HtmlNode title = html.DocumentNode.SelectSingleNode("//title");
             pageInfo.Title = (title == null) ? string.Empty : title.InnerText;
+
+            try
+            {
+                HtmlNode description = html.DocumentNode.SelectSingleNode("//meta[@name='description']");
+                pageInfo.Description = (title == null) ? string.Empty : description.Attributes["content"].Value;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error while attempting to read site description:\t" + e.Message);
+            }
 
             // Retrieve all link nodes
             var nodes = html.DocumentNode.Descendants("a");

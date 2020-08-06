@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace WebScraper
+namespace Crawling
 {
     /// <summary>
     /// Page information retrieved while crawling a web page
@@ -8,24 +9,9 @@ namespace WebScraper
     internal struct PageInfo
     {
         /// <summary>
-        /// Verifies the usability of the structure
-        /// Sets the "IsValid" flag in this structure
+        /// URI of this page
         /// </summary>
-        /// <remarks>
-        /// The most basic page information has at least one link to either an
-        /// internal or an external web page, and it has a title. A description
-        /// is optional but recommended.
-        /// </remarks>
-        public bool IsValid
-        {
-            get
-            {
-                bool titleOk = (Title.Length > 0);
-                bool HasLinks = ((SameDomainLinks.Count > 0) || (ExternalDomainLinks.Count > 0));
-
-                return (titleOk && HasLinks);
-            }
-        }
+        public Uri Uri;
 
         /// <summary>
         /// Title of the web page

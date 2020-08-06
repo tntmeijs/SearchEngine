@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace WebScraper
+namespace Crawling
 {
     /// <summary>
     /// Allows for easy interpretation of robots.txt files

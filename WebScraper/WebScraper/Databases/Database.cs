@@ -1,11 +1,13 @@
 ﻿using System;
 
+using Crawling;
+
 namespace Databases
 {
     /// <summary>
     /// Base class for all database objects
     /// </summary>
-    public abstract class Database
+    internal abstract class Database
     {
         /// <summary>
         /// All available database types
@@ -58,10 +60,19 @@ namespace Databases
         public abstract void Initialize(DatabaseConnectionInfo connectionInfo);
 
         /// <summary>
+        /// Attempt to create a new database or do nothing if one with the same
+        /// name already exists
+        /// </summary>
+        /// <param name="tableName">Name of the database table to create</param>
+        public abstract void TryCreate(string tableName);
+
+        /// <summary>
         /// Add a new page to the database or update an existing entry with the
         /// latest information
         /// </summary>
         /// <param name="pageInfo">Page information retrieved from the web crawler</param>
-        public abstract void AddPage(PageInfo pageInfo);
+        /// <param name="tableName">Name of the table to insert the page information into</param>
+        /// <returns>True when the operation completed successfully, false otherwise</returns>
+        public abstract bool AddPage(PageInfo pageInfo, string tableName);
     }
 }

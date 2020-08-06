@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Configuration;
+
+using Crawling;
 using Databases;
 
 namespace WebScraper
@@ -17,6 +19,7 @@ namespace WebScraper
             public string ServerURL;
             public string ServerPort;
             public string DatabaseName;
+            public string TableName;
             public string DatabaseUser;
             public string DatabaseUserPassword;
         }
@@ -41,11 +44,12 @@ namespace WebScraper
             try
             {
                 // The App.config file is expected to have the following fields
-                Configuration.ServerURL = appSettings["ServerURL"];
-                Configuration.ServerPort = appSettings["ServerPort"];
-                Configuration.DatabaseName = appSettings["DatabaseName"];
-                Configuration.DatabaseUser = appSettings["DatabaseUser"];
-                Configuration.DatabaseUserPassword = appSettings["DatabaseUserPassword"];
+                Configuration.ServerURL             = appSettings["ServerURL"];
+                Configuration.ServerPort            = appSettings["ServerPort"];
+                Configuration.DatabaseName          = appSettings["DatabaseName"];
+                Configuration.TableName             = appSettings["TableName"];
+                Configuration.DatabaseUser          = appSettings["DatabaseUser"];
+                Configuration.DatabaseUserPassword  = appSettings["DatabaseUserPassword"];
             }
             catch (Exception)
             {
@@ -62,44 +66,40 @@ namespace WebScraper
         private void InitializeDatabase(Database.DatabaseType type)
         {
             // Database connection details
-            Database.DatabaseConnectionInfo connectionInfo = new Database.DatabaseConnectionInfo();
-            connectionInfo.HostName         = Configuration.ServerURL;
-            connectionInfo.HostPort         = Configuration.ServerPort;
-            connectionInfo.DatabaseName     = Configuration.DatabaseName;
-            connectionInfo.UserName         = Configuration.DatabaseUser;
-            connectionInfo.UserPassword     = Configuration.DatabaseUserPassword;
+            Database.DatabaseConnectionInfo connectionInfo = new Database.DatabaseConnectionInfo
+            {
+                HostName = Configuration.ServerURL,
+                HostPort = Configuration.ServerPort,
+                DatabaseName = Configuration.DatabaseName,
+                UserName = Configuration.DatabaseUser,
+                UserPassword = Configuration.DatabaseUserPassword
+            };
 
             // Create and initialize the database
             ProgramDatabase = Database.CreateInstance(type);
             ProgramDatabase.Initialize(connectionInfo);
+            ProgramDatabase.TryCreate(Configuration.TableName);
         }
 
         /// <summary>
         /// Create a new main program
         /// </summary>
-        /// <param name="args">Command-line arguments</param>
-        public Program(string[] args)
+        public Program()
         {
             TryParseAppConfig();
             InitializeDatabase(Database.DatabaseType.PostgreSQL);
 
-            //#DEBUG: parse test
-            Crawler crawler = new Crawler();
-            PageInfo pageInfo = crawler.CrawlPage(new Uri("https://html-agility-pack.net"));
-
-            if (pageInfo.IsValid)
-            {
-                Console.WriteLine("Crawled page information is valid, data should be added to the database here.");
-            }
+            // Start crawling
+            Crawler crawler = new Crawler(ProgramDatabase);
+            crawler.Start(Configuration.TableName);
         }
 
         /// <summary>
         /// Application entry point
         /// </summary>
-        /// <param name="args">Command-line arguments</param>
-        static void Main(string[] args)
+        static void Main()
         {
-            _ = new Program(args);
+            _ = new Program();
         }
     }
 }
