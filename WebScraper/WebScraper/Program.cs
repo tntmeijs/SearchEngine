@@ -20,7 +20,6 @@ namespace WebScraper
             public string ServerPort;
             public string DatabaseName;
             public string TableName;
-            public string PendingCrawlTableName;
             public string DatabaseUser;
             public string DatabaseUserPassword;
 
@@ -52,7 +51,6 @@ namespace WebScraper
                 Configuration.ServerPort            = appSettings["ServerPort"];
                 Configuration.DatabaseName          = appSettings["DatabaseName"];
                 Configuration.TableName             = appSettings["TableName"];
-                Configuration.PendingCrawlTableName = appSettings["PendingCrawlTableName"];
                 Configuration.DatabaseUser          = appSettings["DatabaseUser"];
                 Configuration.DatabaseUserPassword  = appSettings["DatabaseUserPassword"];
 
@@ -79,14 +77,13 @@ namespace WebScraper
                 HostName = Configuration.ServerURL,
                 HostPort = Configuration.ServerPort,
                 DatabaseName = Configuration.DatabaseName,
+                TableName = Configuration.TableName,
                 UserName = Configuration.DatabaseUser,
                 UserPassword = Configuration.DatabaseUserPassword
             };
 
             // Create and initialize the database
-            ProgramDatabase = Database.CreateInstance(type);
-            ProgramDatabase.Initialize(connectionInfo);
-            ProgramDatabase.TryCreate(Configuration.TableName, Configuration.PendingCrawlTableName);
+            ProgramDatabase = Database.CreateInstance(type, connectionInfo);
         }
 
         /// <summary>
@@ -99,7 +96,7 @@ namespace WebScraper
 
             // Start crawling
             Crawler crawler = new Crawler();
-            crawler.Start(Configuration.MinCrawlDelay, Configuration.MaxCrawlDelay, ProgramDatabase, Configuration.TableName, Configuration.PendingCrawlTableName);
+            crawler.Start(Configuration.MinCrawlDelay, Configuration.MaxCrawlDelay, ProgramDatabase, Configuration.TableName);
         }
 
         /// <summary>

@@ -25,21 +25,30 @@ namespace Databases
             public string HostName;
             public string HostPort;
             public string DatabaseName;
+            public string TableName;
             public string UserName;
             public string UserPassword;
         }
+
+        protected readonly DatabaseConnectionInfo ConnectionInfo;
+
+        /// <summary>
+        /// Database connection string, used to establish a connection with the database
+        /// </summary>
+        protected string ConnectionString;
 
         /// <summary>
         /// Create a new database object
         /// </summary>
         /// <param name="type">Database to create</param>
+        /// <param name="connectionInfo">Information needed to connect to the database</param>
         /// <returns>New database</returns>
-        public static Database CreateInstance(DatabaseType type)
+        public static Database CreateInstance(DatabaseType type, DatabaseConnectionInfo connectionInfo)
         {
             switch (type)
             {
                 case DatabaseType.PostgreSQL:
-                    return new PostgreSQLDatabase();
+                    return new PostgreSQLDatabase(connectionInfo);
                 default:
                     throw new ArgumentException("Invalid database type.");
             }
@@ -49,23 +58,25 @@ namespace Databases
         /// Helper function to turn a "DatabaseConnectionInfo" structure into a
         /// database connection string
         /// </summary>
-        /// <param name="connectionInfo">Information needed to establish a connection with the database</param>
         /// <returns>Connection string</returns>
-        protected abstract string ConstructConnectionString(DatabaseConnectionInfo connectionInfo);
-
-        /// <summary>
-        /// Initialize the database object to prepare for usage
-        /// </summary>
-        /// <param name="connectionInfo">Information needed to establish a connection with the database</param>
-        public abstract void Initialize(DatabaseConnectionInfo connectionInfo);
+        protected abstract string ConstructConnectionString();
 
         /// <summary>
         /// Attempt to create a new database or do nothing if one with the same
         /// name already exists
         /// </summary>
-        /// <param name="tableName">Name of the database table to store all crawled URLs</param>
-        /// <param name="pendingName">Name of the database table to store any discovered but uncrawled URLs</param>
-        public abstract void TryCreate(string tableName, string pendingName);
+        protected abstract void Create();
+
+        /// <summary>
+        /// Create a new database and initialize it
+        /// </summary>
+        /// <param name="connectionInfo">Information needed to connect to the database</param>
+        public Database(DatabaseConnectionInfo connectionInfo)
+        {
+            ConnectionInfo = connectionInfo;
+            ConnectionString = ConstructConnectionString();
+            Create();
+        }
 
         /// <summary>
         /// Add a new page to the database or update an existing entry with the

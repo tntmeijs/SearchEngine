@@ -13,40 +13,25 @@ namespace Databases
     internal class PostgreSQLDatabase : Database
     {
         /// <summary>
-        /// Database connection string, used to establish a connection with the databse
-        /// </summary>
-        private string ConnectionString;
-
-        /// <summary>
         /// Construct a valid PostgreSQL Npgsql connection string
         /// </summary>
         /// <param name="connectionInfo">Information needed to establish a connection with the database</param>
         /// <returns>Valid Npgsql connection string</returns>
-        protected override string ConstructConnectionString(DatabaseConnectionInfo connectionInfo)
+        protected override string ConstructConnectionString()
         {
             return string.Format("Host={0};Port={1};Database={2};Username={3};Password={4}",
-                connectionInfo.HostName,
-                connectionInfo.HostPort,
-                connectionInfo.DatabaseName,
-                connectionInfo.UserName,
-                connectionInfo.UserPassword);
+                ConnectionInfo.HostName,
+                ConnectionInfo.HostPort,
+                ConnectionInfo.DatabaseName,
+                ConnectionInfo.UserName,
+                ConnectionInfo.UserPassword);
         }
 
         /// <summary>
-        /// Prepare the database for usage
+        /// Attempt to create a new database or do nothing if one with the same
+        /// name already exists
         /// </summary>
-        /// <param name="connectionInfo">Connection information</param>
-        public override void Initialize(DatabaseConnectionInfo connectionInfo)
-        {
-            ConnectionString = ConstructConnectionString(connectionInfo);
-        }
-
-        /// <summary>
-        /// Create tables with the specified names if the tables do not exist yet
-        /// </summary>
-        /// <param name="tableName">Name of the database table to store all crawled URLs</param>
-        /// <param name="pendingName">Name of the database table to store any discovered but uncrawled URLs</param>
-        public override void TryCreate(string tableName, string pendingName)
+        protected override void Create()
         {
             try
             {
@@ -56,11 +41,8 @@ namespace Databases
                     "   title TEXT NOT NULL," +
                     "   description TEXT NOT NULL," +
                     "   rank REAL NOT NULL," +
-                    "   timestamp TIMESTAMP NOT NULL" +
-                    ");" +
-                    "CREATE TABLE IF NOT EXISTS {1} (" +
-                    "   url TEXT PRIMARY KEY NOT NULL" +
-                    ");", tableName, pendingName);
+                    "   timestamp TIMESTAMP DEFAULT 'epoch'" +
+                    ");", ConnectionInfo.TableName);
 
                 using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
                 {
@@ -77,6 +59,13 @@ namespace Databases
                 Console.WriteLine("Error while trying to create tables:\t" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Create and initialize a new PostgreSQL database
+        /// </summary>
+        /// <param name="connectionInfo">Information needed to connect to the database</param>
+        public PostgreSQLDatabase(DatabaseConnectionInfo connectionInfo) : base(connectionInfo)
+        {}
 
         /// <summary>
         /// Insert a new crawled page into the database or update an existing entry
