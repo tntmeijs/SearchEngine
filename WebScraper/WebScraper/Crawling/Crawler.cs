@@ -132,21 +132,17 @@ namespace Crawling
         /// <param name="database">Database to save indexed pages into</param>
         public void Start(int minCrawlDelay, int maxCrawlDelay, Database database)
         {
-            //#TODO: Get rid of "tableName", this is not the place to pass
-            //#      database-related information to a function
-
-            //#DEBUG: try to crawl 10.000 URLs
-            int i = 10000;
+            //#DEBUG: simply exit once we have crawled a thousand URLs
+            int i = 1000;
             while (i-- > 0)
             {
                 // Look for any discovered URLs and crawl them
-                //#TODO: retrieve as many URLs as there are threads / tasks
                 string[] urls = database.GetUncrawledUrls(1);
 
                 foreach (string url in urls)
                 {
                     // Random timeout in milliseconds to avoid overloading websites
-                    int crawlDelayMs = RandomNumberGenerator.Next(minCrawlDelay, maxCrawlDelay) * 1000;
+                    int crawlDelayMs = RandomNumberGenerator.Next(minCrawlDelay * 1000, maxCrawlDelay * 1000);
 
                     // Crawl the page for information and links
                     PageInfo pageInfo = CrawlPage(new Uri(url), crawlDelayMs);
@@ -163,7 +159,6 @@ namespace Crawling
                             links.Add(link.ToString());
                         }
 
-                        //#TODO: only add pages that have not been crawled yet
                         // Save the newly discovered URLs in the "pending" database
                         database.TryAddPendingUrls(links.ToArray());
                     }

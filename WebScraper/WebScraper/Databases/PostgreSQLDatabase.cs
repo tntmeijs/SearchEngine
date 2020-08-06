@@ -38,10 +38,9 @@ namespace Databases
                 string sqlCommand = string.Format(
                     "CREATE TABLE IF NOT EXISTS {0} (" +
                     "   url TEXT PRIMARY KEY NOT NULL," +
-                    "   title TEXT NOT NULL," +
-                    "   description TEXT NOT NULL," +
-                    "   rank REAL NOT NULL," +
-                    "   timestamp TIMESTAMP DEFAULT 'epoch'" +
+                    "   title TEXT NOT NULL DEFAULT 'No title available.'," +
+                    "   description TEXT NOT NULL DEFAULT 'No description available.'," +
+                    "   timestamp TIMESTAMP NOT NULL DEFAULT 'EPOCH'" +
                     ");", ConnectionInfo.TableName);
 
                 using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
@@ -79,10 +78,10 @@ namespace Databases
             try
             {
                 string sqlCommand = string.Format(
-                    "INSERT INTO {0} (url, title, description, rank, timestamp)" +
-                    "VALUES (@pageUrl, @pageTitle, @pageDescription, @pageRank, TO_TIMESTAMP(@pageTimestamp))" +
+                    "INSERT INTO {0} (url, title, description, timestamp)" +
+                    "VALUES (@pageUrl, @pageTitle, @pageDescription, TO_TIMESTAMP(@pageTimestamp))" +
                     "ON CONFLICT (url)" +
-                    "   DO UPDATE SET url = @pageUrl;", ConnectionInfo.TableName);
+                    "   DO UPDATE SET (title, description, timestamp) = (@pageTitle, @pageDescription, TO_TIMESTAMP(@pageTimestamp));", ConnectionInfo.TableName);
 
                 using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
                 {
@@ -90,11 +89,12 @@ namespace Databases
 
                     using (NpgsqlCommand command = new NpgsqlCommand(sqlCommand, connection))
                     {
-                        command.Parameters.AddWithValue("pageUrl", pageInfo.Uri.ToString());
+                        command.Parameters.AddWithValue("pageUrl", pageInfo.Uri.ToString().TrimEnd(new char[] { '$', '-', '_', '.', '+', '!', '*', '\'', '(', ')', ',', '/' }));
                         command.Parameters.AddWithValue("pageTitle", pageInfo.Title);
                         command.Parameters.AddWithValue("pageDescription", pageInfo.Description);
-                        command.Parameters.AddWithValue("pageRank", 0.0f);
                         command.Parameters.AddWithValue("pageTimestamp", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+
+                        Console.WriteLine("Title: " + pageInfo.Title);
 
                         command.ExecuteNonQuery();
                     }
@@ -120,6 +120,7 @@ namespace Databases
 
             try
             {
+                // Construct an insertion command of all URLs in the array
                 StringBuilder sqlCommandBuilder = new StringBuilder(string.Format("INSERT INTO {0} (url)", ConnectionInfo.TableName));
                 sqlCommandBuilder.Append("VALUES ");
 
@@ -127,7 +128,7 @@ namespace Databases
                 foreach (string url in urls)
                 {
                     sqlCommandBuilder.Append("(\'");
-                    sqlCommandBuilder.Append(url);
+                    sqlCommandBuilder.Append(url.TrimEnd(new char[] { '$', '-', '_', '.', '+', '!', '*', '\'', '(', ')', ',', '/' }));
                     sqlCommandBuilder.Append("\')");
 
                     if (index++ < urls.Length - 1)
@@ -136,9 +137,11 @@ namespace Databases
                     }
                 }
 
+                // Do nothing when the same URL already exists in the database
                 sqlCommandBuilder.Append("ON CONFLICT (url)");
                 sqlCommandBuilder.Append("DO NOTHING;");
 
+                // Execute
                 using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
                 {
                     connection.Open();
@@ -159,7 +162,7 @@ namespace Databases
         }
 
         /// <summary>
-        /// Retrieve URLs that have not been crawled yet
+        /// Retrieve URLs that have not been crawled yet or are out of date
         /// </summary>
         /// <param name="count">Maximum number of URLs to retrieve</param>
         /// <returns>Array of URLs</returns>
@@ -172,6 +175,7 @@ namespace Databases
                 string sqlSelectCommand = string.Format(
                     "SELECT url\n" +
                     "FROM {0}\n" +
+                    "ORDER BY timestamp ASC\n" +
                     "LIMIT @count;", ConnectionInfo.TableName);
 
                 using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
@@ -188,33 +192,6 @@ namespace Databases
                             {
                                 returnUrls.Add(reader["url"].ToString());
                             }
-                        }
-                    }
-
-                    if (returnUrls.Count > 0)
-                    {
-                        // Construct and execute a command to delete the previously
-                        // retrieved URLs
-                        string sqlDeleteCommand = string.Format(
-                            "DELETE FROM {0}\n" +
-                            "WHERE url IN (", ConnectionInfo.TableName);
-
-                        int index = 0;
-                        foreach (string url in returnUrls)
-                        {
-                            sqlDeleteCommand += ('\'' + url + '\'');
-
-                            if (index < returnUrls.Count - 1)
-                            {
-                                sqlDeleteCommand += ',';
-                            }
-                        }
-
-                        sqlDeleteCommand += ");";
-
-                        using (NpgsqlCommand command = new NpgsqlCommand(sqlDeleteCommand, connection))
-                        {
-                            command.ExecuteNonQuery();
                         }
                     }
                 }

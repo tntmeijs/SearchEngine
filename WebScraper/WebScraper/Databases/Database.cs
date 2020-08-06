@@ -94,7 +94,7 @@ namespace Databases
         public abstract bool TryAddPendingUrls(string[] urls);
 
         /// <summary>
-        /// Retrieve URLs that have not been crawled yet
+        /// Retrieve URLs that have not been crawled yet or are out of date
         /// </summary>
         /// <param name="count">Maximum number of URLs to retrieve</param>
         /// <returns>Array of URLs</returns>
