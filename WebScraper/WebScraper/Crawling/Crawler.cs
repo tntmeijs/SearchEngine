@@ -130,8 +130,7 @@ namespace Crawling
         /// <param name="minCrawlDelay">Minimum time between two requests to the same host</param>
         /// <param name="maxCrawlDelay">Maximum time between two requests to the same host</param>
         /// <param name="database">Database to save indexed pages into</param>
-        /// <param name="tableName">Name of the database table to insert the data into</param>
-        public void Start(int minCrawlDelay, int maxCrawlDelay, Database database, string tableName)
+        public void Start(int minCrawlDelay, int maxCrawlDelay, Database database)
         {
             //#TODO: Get rid of "tableName", this is not the place to pass
             //#      database-related information to a function
@@ -142,7 +141,7 @@ namespace Crawling
             {
                 // Look for any discovered URLs and crawl them
                 //#TODO: retrieve as many URLs as there are threads / tasks
-                string[] urls = database.GetUncrawledUrls(1, tableName);
+                string[] urls = database.GetUncrawledUrls(1);
 
                 foreach (string url in urls)
                 {
@@ -155,7 +154,7 @@ namespace Crawling
                     if (pageInfo.Uri != null && pageInfo.Links != null)
                     {
                         // Save the crawled page
-                        database.AddOrUpdateCrawledPage(pageInfo, tableName);
+                        database.AddOrUpdateCrawledPage(pageInfo);
 
                         // Convert from URI to string
                         List<string> links = new List<string>();
@@ -166,7 +165,7 @@ namespace Crawling
 
                         //#TODO: only add pages that have not been crawled yet
                         // Save the newly discovered URLs in the "pending" database
-                        database.TryAddPendingUrls(links.ToArray(), tableName);
+                        database.TryAddPendingUrls(links.ToArray());
                     }
                 }
             }

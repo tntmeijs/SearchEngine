@@ -71,9 +71,8 @@ namespace Databases
         /// Insert a new crawled page into the database or update an existing entry
         /// </summary>
         /// <param name="pageInfo">Information of the page to add</param>
-        /// <param name="tableName">Name of the table to insert the page information into</param>
         /// <returns>True when the operation completed successfully, false otherwise</returns>
-        public override bool AddOrUpdateCrawledPage(PageInfo pageInfo, string tableName)
+        public override bool AddOrUpdateCrawledPage(PageInfo pageInfo)
         {
             bool success = true;
 
@@ -83,7 +82,7 @@ namespace Databases
                     "INSERT INTO {0} (url, title, description, rank, timestamp)" +
                     "VALUES (@pageUrl, @pageTitle, @pageDescription, @pageRank, TO_TIMESTAMP(@pageTimestamp))" +
                     "ON CONFLICT (url)" +
-                    "   DO UPDATE SET url = @pageUrl;", tableName);
+                    "   DO UPDATE SET url = @pageUrl;", ConnectionInfo.TableName);
 
                 using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
                 {
@@ -114,15 +113,14 @@ namespace Databases
         /// Add a new page to the database table with URLs that are pending a crawl
         /// </summary>
         /// <param name="urls">URLs to store</param>
-        /// <param name="tableName">Name of the table that contains pending URLs</param>
         /// <returns>True when the operation completed successfully, false otherwise</returns>
-        public override bool TryAddPendingUrls(string[] urls, string tableName)
+        public override bool TryAddPendingUrls(string[] urls)
         {
             bool success = true;
 
             try
             {
-                StringBuilder sqlCommandBuilder = new StringBuilder(string.Format("INSERT INTO {0} (url)", tableName));
+                StringBuilder sqlCommandBuilder = new StringBuilder(string.Format("INSERT INTO {0} (url)", ConnectionInfo.TableName));
                 sqlCommandBuilder.Append("VALUES ");
 
                 int index = 0;
@@ -164,9 +162,8 @@ namespace Databases
         /// Retrieve URLs that have not been crawled yet
         /// </summary>
         /// <param name="count">Maximum number of URLs to retrieve</param>
-        /// <param name="tableName">Name of the table to retrieve the URLs from</param>
         /// <returns>Array of URLs</returns>
-        public override string[] GetUncrawledUrls(int count, string tableName)
+        public override string[] GetUncrawledUrls(int count)
         {
             List<string> returnUrls = new List<string>();
 
@@ -175,7 +172,7 @@ namespace Databases
                 string sqlSelectCommand = string.Format(
                     "SELECT url\n" +
                     "FROM {0}\n" +
-                    "LIMIT @count;", tableName);
+                    "LIMIT @count;", ConnectionInfo.TableName);
 
                 using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
                 {
@@ -200,7 +197,7 @@ namespace Databases
                         // retrieved URLs
                         string sqlDeleteCommand = string.Format(
                             "DELETE FROM {0}\n" +
-                            "WHERE url IN (", tableName);
+                            "WHERE url IN (", ConnectionInfo.TableName);
 
                         int index = 0;
                         foreach (string url in returnUrls)

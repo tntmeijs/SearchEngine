@@ -96,7 +96,7 @@ namespace WebScraper
 
             // Start crawling
             Crawler crawler = new Crawler();
-            crawler.Start(Configuration.MinCrawlDelay, Configuration.MaxCrawlDelay, ProgramDatabase, Configuration.TableName);
+            crawler.Start(Configuration.MinCrawlDelay, Configuration.MaxCrawlDelay, ProgramDatabase);
         }
 
         /// <summary>
