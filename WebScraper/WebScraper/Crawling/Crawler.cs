@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Ganss.XSS;
 
 using Databases;
+using System.Threading;
 
 namespace Crawling
 {
@@ -12,27 +13,30 @@ namespace Crawling
     /// </summary>
     internal class Crawler
     {
-        private readonly HtmlSanitizer InputSanitizer;
+        /// <summary>
+        /// Random number generator
+        /// </summary>
+        private readonly Random RandomNumberGenerator;
 
         /// <summary>
-        /// Database object passed to the constructor of the crawler, cached for
-        /// future use
+        /// Ensures malicious code will not be inserted into the database
         /// </summary>
-        private readonly Database ProgramDatabase;
+        private readonly HtmlSanitizer InputSanitizer;
 
         /// <summary>
         /// Most websites will link to their own pages internally
         /// To avoid requesting a new robots.txt file every single time, the
         /// robots.txt files are cached in memory
         /// </summary>
-        private Dictionary<string, RobotsTxt> CachedRobotsTxtPerHost;
+        private readonly Dictionary<string, RobotsTxt> CachedRobotsTxtPerHost;
 
         /// <summary>
         /// Crawl the page at the specified URI for content
         /// </summary>
         /// <param name="uri">URI of the page to scrape</param>
+        /// <param name="requestDelayMs">Time in milliseconds between requests to avoid overloading websites</param>
         /// <returns>Information found while crawling the page</returns>
-        private PageInfo CrawlPage(Uri uri)
+        private PageInfo CrawlPage(Uri uri, int requestDelayMs)
         {
             PageInfo pageInfo = new PageInfo();
             RobotsTxt robotsTxt;
@@ -50,6 +54,10 @@ namespace Crawling
                 robotsTxt.TryParse(uri);
                 CachedRobotsTxtPerHost[uri.Host] = robotsTxt;
 
+                // Do not overload the website
+                Console.WriteLine("Sleeping thread for " + requestDelayMs + "ms to avoid overloading the website.");
+                Thread.Sleep(requestDelayMs);
+
                 Console.WriteLine("Host \"" + uri.Host + "\" is unknown, adding to the robots.txt cache now.");
             }
 
@@ -62,29 +70,26 @@ namespace Crawling
                 PageParser pageParser = new PageParser();
                 pageInfo = pageParser.Parse(uri);
 
+                // Do not overload the website
+                Console.WriteLine("Sleeping thread for " + requestDelayMs + "ms to avoid overloading the website.");
+                Thread.Sleep(requestDelayMs);
+
                 // Remove any links that violate the robots.txt file of the current domain
-                List<string> validSameDomainLinks = new List<string>();
-                foreach (string link in pageInfo.SameDomainLinks)
+                List<Uri> validSameDomainLinks = new List<Uri>();
+                foreach (Uri link in pageInfo.Links)
                 {
-                    if (robotsTxt.IsAllowed(new Uri(link)))
+                    // External domain, no need to check robots.txt for it
+                    if (link.Host != uri.Host)
+                    {
+                        continue;
+                    }
+
+                    // Same domain, check whether the crawler is allowed to access
+                    // the page
+                    if (robotsTxt.IsAllowed(link))
                     {
                         validSameDomainLinks.Add(link);
                     }
-                }
-
-                Console.WriteLine("\nTITLE");
-                Console.WriteLine("\t" + pageInfo.Title);
-
-                Console.WriteLine("\nSAME DOMAIN");
-                foreach (string link in validSameDomainLinks)
-                {
-                    Console.WriteLine("\t" + link);
-                }
-
-                Console.WriteLine("\nEXTERNAL DOMAIN");
-                foreach (string link in pageInfo.ExternalDomainLinks)
-                {
-                    Console.WriteLine("\t" + link);
                 }
             }
             else
@@ -112,26 +117,60 @@ namespace Crawling
         /// <summary>
         /// Create a new page crawler instance
         /// </summary>
-        /// <param name="database">Database to save indexed pages into</param>
-        public Crawler(Database database)
+        public Crawler()
         {
+            RandomNumberGenerator = new Random((int)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
             InputSanitizer = new HtmlSanitizer();
-            ProgramDatabase = database;
             CachedRobotsTxtPerHost = new Dictionary<string, RobotsTxt>();
         }
 
         /// <summary>
         /// Start crawling the web
         /// </summary>
+        /// <param name="minCrawlDelay">Minimum time between two requests to the same host</param>
+        /// <param name="maxCrawlDelay">Maximum time between two requests to the same host</param>
+        /// <param name="database">Database to save indexed pages into</param>
         /// <param name="tableName">Name of the database table to insert the data into</param>
-        public void Start(string tableName)
+        /// <param name="pendingName">Name of the database table to insert uncrawled URLs into</param>
+        public void Start(int minCrawlDelay, int maxCrawlDelay, Database database, string tableName, string pendingName)
         {
-            //#TODO: Get rid of "tableName", this is not the place to pass databse
-            //#      related information to a function
+            //#TODO: Get rid of "tableName", this is not the place to pass
+            //#      database-related information to a function
 
-            //#DEBUG: just crawl the Reddit homepage for links
-            PageInfo pageInfo = CrawlPage(new Uri("https://reddit.com"));
-            ProgramDatabase.AddPage(pageInfo, tableName);
+            //#DEBUG: try to crawl 10.000 URLs
+            int i = 10000;
+            while (i-- > 0)
+            {
+                // Look for any discovered URLs and crawl them
+                //#TODO: retrieve as many URLs as there are threads / tasks
+                string[] urls = database.GetUncrawledUrls(1, pendingName);
+
+                foreach (string url in urls)
+                {
+                    // Random timeout in milliseconds to avoid overloading websites
+                    int crawlDelayMs = RandomNumberGenerator.Next(minCrawlDelay, maxCrawlDelay) * 1000;
+
+                    // Crawl the page for information and links
+                    PageInfo pageInfo = CrawlPage(new Uri(url), crawlDelayMs);
+
+                    if (pageInfo.Uri != null && pageInfo.Links != null)
+                    {
+                        // Save the crawled page
+                        database.AddOrUpdateCrawledPage(pageInfo, tableName);
+
+                        // Convert from URI to string
+                        List<string> links = new List<string>();
+                        foreach (Uri link in pageInfo.Links)
+                        {
+                            links.Add(link.ToString());
+                        }
+
+                        //#TODO: only add pages that have not been crawled yet
+                        // Save the newly discovered URLs in the "pending" database
+                        database.TryAddPendingUrls(links.ToArray(), pendingName);
+                    }
+                }
+            }
         }
     }
 }

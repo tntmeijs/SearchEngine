@@ -63,8 +63,9 @@ namespace Databases
         /// Attempt to create a new database or do nothing if one with the same
         /// name already exists
         /// </summary>
-        /// <param name="tableName">Name of the database table to create</param>
-        public abstract void TryCreate(string tableName);
+        /// <param name="tableName">Name of the database table to store all crawled URLs</param>
+        /// <param name="pendingName">Name of the database table to store any discovered but uncrawled URLs</param>
+        public abstract void TryCreate(string tableName, string pendingName);
 
         /// <summary>
         /// Add a new page to the database or update an existing entry with the
@@ -73,6 +74,22 @@ namespace Databases
         /// <param name="pageInfo">Page information retrieved from the web crawler</param>
         /// <param name="tableName">Name of the table to insert the page information into</param>
         /// <returns>True when the operation completed successfully, false otherwise</returns>
-        public abstract bool AddPage(PageInfo pageInfo, string tableName);
+        public abstract bool AddOrUpdateCrawledPage(PageInfo pageInfo, string tableName);
+
+        /// <summary>
+        /// Add a new page to the database table with URLs that are pending a crawl
+        /// </summary>
+        /// <param name="urls">URLs to store</param>
+        /// <param name="tableName">Name of the table that contains pending URLs</param>
+        /// <returns>True when the operation completed successfully, false otherwise</returns>
+        public abstract bool TryAddPendingUrls(string[] urls, string tableName);
+
+        /// <summary>
+        /// Retrieve URLs that have not been crawled yet
+        /// </summary>
+        /// <param name="count">Maximum number of URLs to retrieve</param>
+        /// <param name="tableName">Name of the table to retrieve the URLs from</param>
+        /// <returns>Array of URLs</returns>
+        public abstract string[] GetUncrawledUrls(int count, string tableName);
     }
 }

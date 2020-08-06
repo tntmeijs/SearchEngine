@@ -20,8 +20,12 @@ namespace WebScraper
             public string ServerPort;
             public string DatabaseName;
             public string TableName;
+            public string PendingCrawlTableName;
             public string DatabaseUser;
             public string DatabaseUserPassword;
+
+            public int MinCrawlDelay;
+            public int MaxCrawlDelay;
         }
 
         /// <summary>
@@ -48,8 +52,12 @@ namespace WebScraper
                 Configuration.ServerPort            = appSettings["ServerPort"];
                 Configuration.DatabaseName          = appSettings["DatabaseName"];
                 Configuration.TableName             = appSettings["TableName"];
+                Configuration.PendingCrawlTableName = appSettings["PendingCrawlTableName"];
                 Configuration.DatabaseUser          = appSettings["DatabaseUser"];
                 Configuration.DatabaseUserPassword  = appSettings["DatabaseUserPassword"];
+
+                Configuration.MinCrawlDelay         = int.Parse(appSettings["MinCrawlDelay"]);
+                Configuration.MaxCrawlDelay         = int.Parse(appSettings["MaxCrawlDelay"]);
             }
             catch (Exception)
             {
@@ -78,7 +86,7 @@ namespace WebScraper
             // Create and initialize the database
             ProgramDatabase = Database.CreateInstance(type);
             ProgramDatabase.Initialize(connectionInfo);
-            ProgramDatabase.TryCreate(Configuration.TableName);
+            ProgramDatabase.TryCreate(Configuration.TableName, Configuration.PendingCrawlTableName);
         }
 
         /// <summary>
@@ -90,8 +98,8 @@ namespace WebScraper
             InitializeDatabase(Database.DatabaseType.PostgreSQL);
 
             // Start crawling
-            Crawler crawler = new Crawler(ProgramDatabase);
-            crawler.Start(Configuration.TableName);
+            Crawler crawler = new Crawler();
+            crawler.Start(Configuration.MinCrawlDelay, Configuration.MaxCrawlDelay, ProgramDatabase, Configuration.TableName, Configuration.PendingCrawlTableName);
         }
 
         /// <summary>

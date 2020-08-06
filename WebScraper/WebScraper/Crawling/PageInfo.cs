@@ -24,13 +24,8 @@ namespace Crawling
         public string Description;
 
         /// <summary>
-        /// Links found to pages on the same domain
+        /// Links found to other pages
         /// </summary>
-        public List<string> SameDomainLinks;
-
-        /// <summary>
-        /// Links found to pages on external domains
-        /// </summary>
-        public List<string> ExternalDomainLinks;
+        public List<Uri> Links;
     }
 }
