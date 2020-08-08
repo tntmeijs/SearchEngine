@@ -1,8 +1,72 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+/*
+ *  +-------------------------------------------------------------------------+
+ *  | Global styles                                                           |
+ *  +-------------------------------------------------------------------------+
+ */
+html, body {
+  margin: 0;
+  padding: 0;
 }
 
-a {
-  color: #00B7FF;
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-color: #070600;
+}
+
+/*
+ *  +-------------------------------------------------------------------------+
+ *  | Search page                                                             |
+ *  +-------------------------------------------------------------------------+
+ */
+#search-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 1600px;  /* May seem small, but it looks great on a 4k monitor! */
+}
+
+#search-form .form-fields {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+#search-field {
+  border: none;
+  margin: 0;
+  padding: 0;
+  background-color: #F7F7FF;
+  color: #070600;
+  width: 50%;
+  height: 2rem;
+  outline: none;
+  padding: 2rem 2rem;
+  font-size: 1.5rem;
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+
+#search-button {
+  border: none;
+  margin: 0;
+  padding: 0rem 1.5rem;
+  background-color: #23B5D3;
+  color: #F7F7FF;
+  font-size: 1.5rem;
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+#search-button:hover {
+  cursor: pointer;
+  background-color: #279AF1;
 }
