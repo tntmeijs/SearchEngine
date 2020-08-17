@@ -44,10 +44,6 @@ app.get('/search', function(req, res, next) {
   // Extremely simple search algorithm, look for the
   // search query in the website's description
   //
-  // Each search is limited to 25 results
-  // The result limit is not ideal, but it is good
-  // enough for a proof of concept
-  //
   // The input is parsed using a Regex that matches
   // all words and numbers. No input sanitization is
   // done, which poses a security threat.
@@ -60,7 +56,7 @@ app.get('/search', function(req, res, next) {
     queryParams.push('%' + word + '%');
   });
 
-  const sql = `SELECT * FROM ${process.env.TABLE_NAME} WHERE description LIKE ANY (array[$1]) LIMIT 25;`;
+  const sql = `SELECT * FROM ${process.env.TABLE_NAME} WHERE url LIKE ANY (array[$1]) OR title LIKE ANY (array[$1]) OR description LIKE ANY (array[$1]);`;
 
   postgresqlClient.query(sql, queryParams, (err, result) => {
     if (err) {

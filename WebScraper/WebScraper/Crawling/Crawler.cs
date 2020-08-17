@@ -39,32 +39,12 @@ namespace Crawling
         private PageInfo CrawlPage(Uri uri, int requestDelayMs)
         {
             PageInfo pageInfo = new PageInfo();
-            RobotsTxt robotsTxt;
-
-            // Attempt to retrieve a robots.txt file from the in-memory cache
-            if (CachedRobotsTxtPerHost.ContainsKey(uri.Host))
-            {
-                robotsTxt = CachedRobotsTxtPerHost[uri.Host];
-                Console.WriteLine("Host \"" + uri.Host + "\" has been retrieved from the robots.txt cache.");
-            }
-            else
-            {
-                // Request a new robots.txt file and cache it
-                robotsTxt = new RobotsTxt();
-                robotsTxt.TryParse(uri);
-                CachedRobotsTxtPerHost[uri.Host] = robotsTxt;
-
-                // Do not overload the website
-                Console.WriteLine("Sleeping thread for " + requestDelayMs + "ms to avoid overloading the website.");
-                Thread.Sleep(requestDelayMs);
-
-                Console.WriteLine("Host \"" + uri.Host + "\" is unknown, adding to the robots.txt cache now.");
-            }
+            RobotsTxt robotsTxt = TryGetRobotsTxt(uri);
 
             // Test whether a crawler is allowed to crawl this page
             if (robotsTxt.IsAllowed(uri))
             {
-                Console.WriteLine("Parsing page: " + uri.AbsoluteUri);
+                Console.WriteLine("Parsing page: " + uri.ToString());
                  
                 // Crawl the page for information
                 PageParser pageParser = new PageParser();
@@ -94,11 +74,38 @@ namespace Crawling
             }
             else
             {
-                Console.WriteLine("Skipping page: " + uri.AbsoluteUri);
+                Console.WriteLine("Skipping page: " + uri.ToString());
             }
 
             // Ensure no malicious input is sent to the database
             return SanitizePageInfo(pageInfo);
+        }
+
+        /// <summary>
+        /// Helper function to retrieve robots.txt files
+        /// </summary>
+        /// <param name="uri">URI to retrieve the robots.txt file for</param>
+        /// <returns>Structure containing robots.txt file information</returns>
+        private RobotsTxt TryGetRobotsTxt(Uri uri)
+        {
+            // Attempt to retrieve a robots.txt file from the in-memory cache
+            if (CachedRobotsTxtPerHost.ContainsKey(uri.Host))
+            {
+                Console.WriteLine("Host \"" + uri.Host + "\" has been retrieved from the robots.txt cache.");
+                return CachedRobotsTxtPerHost[uri.Host];
+            }
+            else
+            {
+                // Request a new robots.txt file and cache it
+                RobotsTxt robotsTxt = new RobotsTxt();
+                robotsTxt.TryParse(uri);
+
+                // Save the newly discovered robots.txt file in the in-memory cache
+                CachedRobotsTxtPerHost[uri.Host] = robotsTxt;
+
+                Console.WriteLine("Host \"" + uri.Host + "\" is unknown, adding to the robots.txt cache now.");
+                return robotsTxt;
+            }
         }
 
         /// <summary>
@@ -137,7 +144,7 @@ namespace Crawling
             while (i-- > 0)
             {
                 // Look for any discovered URLs and crawl them
-                string[] urls = database.GetUncrawledUrls(1);
+                string[] urls = database.GetUncrawledUrls(100);
 
                 foreach (string url in urls)
                 {
@@ -156,7 +163,16 @@ namespace Crawling
                         List<string> links = new List<string>();
                         foreach (Uri link in pageInfo.Links)
                         {
-                            links.Add(link.ToString());
+                            RobotsTxt robotsTxt = TryGetRobotsTxt(link);
+
+                            if (Uri.IsWellFormedUriString(link.ToString(), UriKind.Absolute) && robotsTxt.IsAllowed(link))
+                            {
+                                links.Add(link.ToString());
+                            }
+                            else
+                            {
+                                Console.WriteLine("Incorrectly formed URI string or denied by robots.txt: " + link.ToString());
+                            }
                         }
 
                         // Save the newly discovered URLs in the "pending" database

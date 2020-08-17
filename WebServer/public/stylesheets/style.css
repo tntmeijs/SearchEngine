@@ -88,6 +88,7 @@ body {
 
 .result {
   list-style-type: none;
+  margin-bottom: 3rem;
 }
 
 .result:hover > .result-title {
@@ -100,6 +101,8 @@ body {
 
 .result-url-visible {
   color: #206a5d;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .result-title {
