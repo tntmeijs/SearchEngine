@@ -1,0 +1,32 @@
+html
+    head
+        title SEARCH | Search Engine
+        link(rel="stylesheet" href="/stylesheets/style.css")
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+
+    body
+    form(method="GET" action="/search" id="search-form")
+        div(class="form-fields")
+            input(type="search" name="search" id="search-field" required placeholder="How do I enable JavaScript?")
+            button(type="submit" id="search-button") Search
+
+    script.
+        // Just some dumb questions to use as placeholders in the search
+        // box, some of these were sourced from https://reddit.com/r/stupidquestions
+        // No need to use a database for this, hard-coded strings will suffice
+        let randomFunnySearchPhrases = [
+        "Should I tell my parents I'm adopted?",
+        "Why can't we swim though the sky when it rains?",
+        "Does Lightning McQueen have car or life insurance?",
+        "What is grass?",
+        "Can I set milk on fire?",
+        "Are cats better than dogs?",
+        "Is 'making memes' a good career?",
+        "Is mayonnaise an instrument?",
+        "Can I drive a rock?",
+        "What's funnier than 24?"
+        ];
+
+        // Randomly pick a placeholder phrase
+        let selectedPhrase = randomFunnySearchPhrases[Math.floor(Math.random() * randomFunnySearchPhrases.length)];
+        document.getElementById("search-field").placeholder = selectedPhrase;

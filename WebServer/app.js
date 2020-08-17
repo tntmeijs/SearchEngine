@@ -6,6 +6,8 @@ var logger = require('morgan');
 
 var app = express();
 
+app.set('view engine', 'pug');
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -13,14 +15,12 @@ app.use(cookieParser());
 
 /* GET home page */
 app.get('/', function(req, res, next) {
-  console.log(__dirname);
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.render('index');
 });
 
 /* GET search results */
 app.get('/search', function(req, res, next) {
-  console.log("Search query: " + req.query.search);
-  res.sendFile(path.join(__dirname, 'public', 'search_results.html'));
+  res.render('search_results', { query: req.query.search });
 });
 
 /* Set the static serving directory after the routes to ensure console.log()
