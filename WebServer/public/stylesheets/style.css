@@ -10,7 +10,8 @@ html, body {
 
 body {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
   background-color: #ebecf1;
 }
@@ -75,6 +76,8 @@ body {
  *  +-------------------------------------------------------------------------+
  */
 .query-title {
+  border-bottom: 0.1rem solid #1b1c25;
+  margin-bottom: 5rem;
 }
 
 .result-list {
@@ -85,6 +88,10 @@ body {
 
 .result {
   list-style-type: none;
+}
+
+.result:hover > .result-title {
+  text-decoration: underline;
 }
 
 .result-url {

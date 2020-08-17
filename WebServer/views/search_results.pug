@@ -5,6 +5,7 @@ html
         meta(name="viewport" content="width=device-width, initial-scale=1")
 
     body
+        h1(class='query-title') Search results for "#{query}":
         ul(class='result-list')
             each result in results
                 a(href=result.url class='result-url' target='_blank')
