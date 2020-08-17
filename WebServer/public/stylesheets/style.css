@@ -5,14 +5,14 @@
  */
 html, body {
   margin: 0;
-  padding: 0;
+  padding: 2rem 0rem 0rem 0rem;
 }
 
 body {
   display: flex;
   justify-content: center;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-  background-color: #1A2930;
+  background-color: #ebecf1;
 }
 
 /*
@@ -67,4 +67,42 @@ body {
 #search-button:hover {
   cursor: pointer;
   background-color: #279AF1;
+}
+
+/*
+ *  +-------------------------------------------------------------------------+
+ *  | Results page                                                            |
+ *  +-------------------------------------------------------------------------+
+ */
+.query-title {
+}
+
+.result-list {
+  margin: 0;
+  padding: 0;
+  max-width: 50%;
+}
+
+.result {
+  list-style-type: none;
+}
+
+.result-url {
+  text-decoration: none;
+}
+
+.result-url-visible {
+  color: #206a5d;
+}
+
+.result-title {
+  color: #1b1c25;
+  margin: 1rem 0rem 0.25rem 0rem;
+  font-size: 1.25rem;
+}
+
+.result-description {
+  color: #1b1c25;
+  margin: 0;
+  padding: 0.2rem 0rem 0.75rem 0rem;
 }

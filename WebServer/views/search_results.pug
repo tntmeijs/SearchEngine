@@ -1,13 +1,14 @@
 html
     head
-        title #{query}
+        title Search results for: "#{query}"
         link(rel="stylesheet" href="/stylesheets/style.css")
         meta(name="viewport" content="width=device-width, initial-scale=1")
 
     body
-        ul
+        ul(class='result-list')
             each result in results
-                li
-                    h3 #{result.title}
-                    a(href=result.url) #{result.url}
-                    span #{result.description}
+                a(href=result.url class='result-url' target='_blank')
+                    li(class='result')
+                        span(class='result-url-visible') #{result.url}
+                        h3(class='result-title') #{result.title}
+                        p(class='result-description') #{result.description}
